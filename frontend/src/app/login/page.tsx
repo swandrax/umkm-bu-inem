@@ -179,6 +179,19 @@ export default function LoginPage() {
                   </>
                 )}
               </button>
+
+              <div className="pt-2 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await login("kasir", "kasir123");
+                    router.push("/pos");
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 text-amber-900 text-xs font-bold hover:bg-amber-100/80 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>⚡ Masuk Cepat Sebagai Kasir (Mode Dummy)</span>
+                </button>
+              </div>
             </form>
           ) : (
             <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
