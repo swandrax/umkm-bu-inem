@@ -208,21 +208,25 @@ export default function TransactionsPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-stone-50/70 border border-stone-200 rounded-xl px-2.5 py-1 text-xs">
-              <Calendar className="h-3.5 w-3.5 text-stone-400" />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent text-stone-800 text-xs focus:outline-none"
-              />
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-1.5 bg-stone-50/70 border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs w-full sm:w-auto justify-between sm:justify-start">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-stone-400" />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="bg-transparent text-stone-800 text-xs focus:outline-none"
+                  aria-label="Tanggal Mulai"
+                />
+              </div>
               <span className="text-stone-400">-</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="bg-transparent text-stone-800 text-xs focus:outline-none"
+                aria-label="Tanggal Selesai"
               />
             </div>
 
@@ -263,9 +267,9 @@ export default function TransactionsPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-stone-50/80 border-b border-stone-200 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
+          <div className="overflow-x-auto w-full">
+            <table className="min-w-[720px] w-full text-left text-xs">
+              <thead className="bg-stone-50/80 border-b border-stone-200 text-[11px] font-bold text-stone-600 uppercase tracking-wider whitespace-nowrap">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (

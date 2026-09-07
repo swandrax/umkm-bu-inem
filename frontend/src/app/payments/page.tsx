@@ -212,8 +212,8 @@ export default function PaymentsPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[640px] text-left text-xs">
               <thead className="bg-stone-50/80 border-b border-stone-200 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>

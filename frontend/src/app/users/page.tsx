@@ -150,8 +150,8 @@ export default function UsersPage() {
 
       {/* Users Table */}
       <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[560px] text-left text-xs">
             <thead>
               <tr className="border-b border-stone-200 bg-stone-50/75 text-[11px] uppercase tracking-wider text-stone-500 font-bold">
                 <th className="py-3 px-4">Nama Lengkap</th>

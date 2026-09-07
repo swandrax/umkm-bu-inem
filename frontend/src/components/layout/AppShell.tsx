@@ -2,7 +2,6 @@
 
 import React, { useEffect, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useAuthStore } from "@/stores/auth.store";
 import ThermalReceiptModal from "@/components/pos/ThermalReceiptModal";
@@ -67,11 +66,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#faf9f5] text-stone-900 flex flex-col antialiased">
-      <Sidebar />
-      <div className="flex flex-1 flex-col transition-all duration-200 lg:pl-72">
-        <Navbar />
-        <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">{children}</main>
-      </div>
+      <Navbar />
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-x-hidden">
+        {children}
+      </main>
+
+      {/* Semantic accessible footer */}
+      <footer className="w-full border-t border-stone-200/80 bg-white py-4 px-4 sm:px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500 text-center sm:text-left">
+          <p>© {new Date().getFullYear()} Jajanan Ibu Inem. Sistem Point of Sales UMKM Modern.</p>
+          <div className="flex items-center justify-center gap-3 text-[11px]">
+            <span>v1.0.0 (Spring Boot 3 + Next.js)</span>
+            <span className="text-stone-300" aria-hidden="true">•</span>
+            <span className="text-emerald-700 font-bold">POS Operasional Aktif</span>
+          </div>
+        </div>
+      </footer>
 
       {/* Global Thermal Receipt Modal */}
       <ThermalReceiptModal />

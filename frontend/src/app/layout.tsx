@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/QueryProvider";
@@ -14,9 +14,44 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#f59e0b",
+};
+
 export const metadata: Metadata = {
-  title: "Jajanan Ibu Inem - Modern POS",
-  description: "Aplikasi Kasir & Point of Sales Modern Jajanan Ibu Inem",
+  title: {
+    default: "Jajanan Ibu Inem - Sistem Kasir & POS UMKM Modern",
+    template: "%s | Jajanan Ibu Inem",
+  },
+  description:
+    "Aplikasi Point of Sales (POS), Kasir Cepat, dan Manajemen Operasional UMKM Jajanan Tradisional Ibu Inem.",
+  keywords: [
+    "POS UMKM",
+    "Kasir Jajanan",
+    "Jajanan Ibu Inem",
+    "Point of Sales",
+    "Aplikasi Kasir",
+    "Kue Tradisional",
+  ],
+  authors: [{ name: "UMKM Jajanan Ibu Inem" }],
+  creator: "Ibu Inem",
+  publisher: "Jajanan Ibu Inem",
+  metadataBase: new URL("http://localhost:3000"),
+  openGraph: {
+    title: "Jajanan Ibu Inem - Sistem Kasir & POS UMKM Modern",
+    description:
+      "Aplikasi Point of Sales (POS), Kasir Cepat, dan Manajemen Operasional UMKM Jajanan Tradisional Ibu Inem.",
+    type: "website",
+    locale: "id_ID",
+    siteName: "Jajanan Ibu Inem POS",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

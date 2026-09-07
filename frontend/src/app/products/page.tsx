@@ -9,9 +9,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   flexRender,
-  ColumnDef,
-  SortingState,
 } from "@tanstack/react-table";
+import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   Package,
   Plus,
@@ -339,9 +338,9 @@ export default function ProductsPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-stone-50 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-600">
+          <div className="overflow-x-auto w-full">
+            <table className="min-w-[640px] w-full text-left text-xs sm:text-sm">
+              <thead className="bg-stone-50 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-600 whitespace-nowrap">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (

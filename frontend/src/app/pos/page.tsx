@@ -46,6 +46,7 @@ export default function PosPage() {
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const cartSectionRef = useRef<HTMLDivElement>(null);
 
   // TanStack Query for server state
   const { data: categories = [] } = useCategoriesQuery();
@@ -75,9 +76,9 @@ export default function PosPage() {
   const selectedCustomerObj = customers.find((c) => c.id === customerId);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 items-start h-[calc(100vh-6.5rem)]">
+    <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch lg:items-start min-h-full h-auto lg:h-[calc(100vh-6.5rem)] pb-16 lg:pb-0">
       {/* Left: Product Catalog & Category Filter */}
-      <div className="flex-1 flex flex-col h-full min-w-0 space-y-4">
+      <div className="flex-1 flex flex-col h-full min-w-0 space-y-3 sm:space-y-4">
         {/* Top Controls: Search Bar & Quick Categories */}
         <div className="bg-white p-4 rounded-3xl border border-stone-200/80 shadow-xs space-y-3">
           <div className="relative">
@@ -199,7 +200,7 @@ export default function PosPage() {
       </div>
 
       {/* Right: Cart & Checkout Panel */}
-      <div className="w-full lg:w-96 flex flex-col h-full bg-white rounded-3xl border border-stone-200/80 shadow-md p-5 space-y-4">
+      <div ref={cartSectionRef} className="w-full lg:w-96 flex flex-col h-full bg-white rounded-3xl border border-stone-200/80 shadow-md p-4 sm:p-5 space-y-4">
         {/* Cart Header */}
         <div className="flex items-center justify-between pb-3 border-b border-stone-100">
           <div className="flex items-center gap-2">
@@ -360,6 +361,41 @@ export default function PosPage() {
         onClose={() => setPaymentModalOpen(false)}
         onSuccess={handlePaymentSuccess}
       />
+
+      {/* Floating Mobile Cart Summary Bar (Only on Tablet & Mobile < 1024px) */}
+      {items.length > 0 && (
+        <div className="lg:hidden fixed bottom-4 left-3 right-3 z-20 bg-stone-900/95 text-white p-3 sm:p-3.5 rounded-2xl shadow-2xl border border-stone-800 flex items-center justify-between gap-3 backdrop-blur-md animate-in slide-in-from-bottom duration-200">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+              {items.reduce((s, i) => s + i.quantity, 0)}
+            </div>
+            <div className="truncate">
+              <p className="text-[10px] text-stone-400 font-medium leading-none">Total Belanja</p>
+              <p className="text-sm sm:text-base font-black text-amber-400 font-mono leading-tight mt-0.5">
+                {formatRupiah(getGrandTotal())}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                cartSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="px-3.5 py-2.5 rounded-xl bg-stone-800 text-stone-200 hover:bg-stone-700 text-xs font-bold border border-stone-700 transition-colors cursor-pointer"
+            >
+              Lihat Detail
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentModalOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-black shadow-md hover:from-amber-600 hover:to-orange-700 active:scale-95 transition-all cursor-pointer"
+            >
+              Bayar Sekarang
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

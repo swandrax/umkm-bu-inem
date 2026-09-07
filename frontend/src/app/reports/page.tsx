@@ -168,7 +168,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Dynamic Controls based on tab */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {activeTab === "daily" && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-stone-500 font-medium">Tanggal:</span>
@@ -255,8 +255,8 @@ export default function ReportsPage() {
 
       {/* Table of Transactions */}
       <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead>
               <tr className="border-b border-stone-200 bg-stone-50/75 text-[11px] uppercase tracking-wider text-stone-500 font-bold">
                 <th className="py-3 px-4">No. Transaksi</th>
