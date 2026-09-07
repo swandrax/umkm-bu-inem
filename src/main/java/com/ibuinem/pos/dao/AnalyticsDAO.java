@@ -14,12 +14,12 @@ public class AnalyticsDAO {
 
     public BigDecimal getTotalSales(String filter) {
         String sql = "SELECT SUM(total) as total FROM sales WHERE status = 'PAID'";
-        if ("TODAY".equals(filter)) {
-            sql += " AND DATE(transaction_date) = CURDATE()";
-        } else if ("WEEK".equals(filter)) {
-            sql += " AND YEARWEEK(transaction_date, 1) = YEARWEEK(CURDATE(), 1)";
-        } else if ("MONTH".equals(filter)) {
-            sql += " AND MONTH(transaction_date) = MONTH(CURDATE()) AND YEAR(transaction_date) = YEAR(CURDATE())";
+        if ("TODAY".equals(filter) || "Hari Ini".equals(filter)) {
+            sql += " AND CAST(transaction_date AS DATE) = CURRENT_DATE";
+        } else if ("WEEK".equals(filter) || "Minggu Ini".equals(filter)) {
+            sql += " AND transaction_date >= CURRENT_DATE - INTERVAL '7 days'";
+        } else if ("MONTH".equals(filter) || "Bulan Ini".equals(filter)) {
+            sql += " AND transaction_date >= CURRENT_DATE - INTERVAL '30 days'";
         }
 
         try (Connection conn = DatabaseConfig.getConnection();
@@ -37,12 +37,12 @@ public class AnalyticsDAO {
 
     public int getTransactionCount(String filter) {
         String sql = "SELECT COUNT(id) as count FROM sales WHERE status = 'PAID'";
-        if ("TODAY".equals(filter)) {
-            sql += " AND DATE(transaction_date) = CURDATE()";
-        } else if ("WEEK".equals(filter)) {
-            sql += " AND YEARWEEK(transaction_date, 1) = YEARWEEK(CURDATE(), 1)";
-        } else if ("MONTH".equals(filter)) {
-            sql += " AND MONTH(transaction_date) = MONTH(CURDATE()) AND YEAR(transaction_date) = YEAR(CURDATE())";
+        if ("TODAY".equals(filter) || "Hari Ini".equals(filter)) {
+            sql += " AND CAST(transaction_date AS DATE) = CURRENT_DATE";
+        } else if ("WEEK".equals(filter) || "Minggu Ini".equals(filter)) {
+            sql += " AND transaction_date >= CURRENT_DATE - INTERVAL '7 days'";
+        } else if ("MONTH".equals(filter) || "Bulan Ini".equals(filter)) {
+            sql += " AND transaction_date >= CURRENT_DATE - INTERVAL '30 days'";
         }
 
         try (Connection conn = DatabaseConfig.getConnection();
@@ -59,8 +59,8 @@ public class AnalyticsDAO {
 
     public int getProductsSold(String filter) {
         String sql = "SELECT SUM(sd.quantity) as count FROM sale_details sd JOIN sales s ON sd.sale_id = s.id WHERE s.status = 'PAID'";
-        if ("TODAY".equals(filter)) {
-            sql += " AND DATE(s.transaction_date) = CURDATE()";
+        if ("TODAY".equals(filter) || "Hari Ini".equals(filter)) {
+            sql += " AND CAST(s.transaction_date AS DATE) = CURRENT_DATE";
         }
 
         try (Connection conn = DatabaseConfig.getConnection();
@@ -77,8 +77,8 @@ public class AnalyticsDAO {
 
     public int getCustomerCount(String filter) {
         String sql = "SELECT COUNT(id) as count FROM customers";
-        if ("TODAY".equals(filter)) {
-            sql += " WHERE DATE(created_at) = CURDATE()";
+        if ("TODAY".equals(filter) || "Hari Ini".equals(filter)) {
+            sql += " WHERE CAST(created_at AS DATE) = CURRENT_DATE";
         }
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -94,7 +94,7 @@ public class AnalyticsDAO {
 
     public Map<String, BigDecimal> getDailySalesChartData() {
         Map<String, BigDecimal> data = new HashMap<>();
-        String sql = "SELECT DATE(transaction_date) as date, SUM(total) as total FROM sales WHERE status = 'PAID' GROUP BY DATE(transaction_date) ORDER BY DATE(transaction_date) ASC LIMIT 30";
+        String sql = "SELECT CAST(transaction_date AS DATE) as date, SUM(total) as total FROM sales WHERE status = 'PAID' GROUP BY CAST(transaction_date AS DATE) ORDER BY CAST(transaction_date AS DATE) ASC LIMIT 30";
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -149,8 +149,8 @@ public class AnalyticsDAO {
                      "LEFT JOIN packages p ON s.package_id = p.id " +
                      "LEFT JOIN shipping sh ON s.id = sh.sale_id ";
                      
-        if ("TODAY".equals(dateFilter)) {
-            sql += "WHERE DATE(s.transaction_date) = CURDATE() ";
+        if ("TODAY".equals(dateFilter) || "Hari Ini".equals(dateFilter)) {
+            sql += "WHERE CAST(s.transaction_date AS DATE) = CURRENT_DATE ";
         }
         sql += "ORDER BY s.transaction_date DESC";
 

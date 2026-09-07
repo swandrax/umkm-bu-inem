@@ -1,11 +1,13 @@
 package com.ibuinem.pos.service;
 
 import com.ibuinem.pos.dao.PackageDAO;
-import com.ibuinem.pos.model.PackageModel;
 import com.ibuinem.pos.model.PackageBenefit;
+import com.ibuinem.pos.model.PackageModel;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class PackageService {
     private final PackageDAO packageDAO = new PackageDAO();
 

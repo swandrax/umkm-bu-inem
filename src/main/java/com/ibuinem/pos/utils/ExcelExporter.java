@@ -124,4 +124,42 @@ public class ExcelExporter {
         }
         return false;
     }
+
+    public static byte[] exportSalesToExcelBytes(List<Sale> sales) {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Laporan Penjualan");
+
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"No", "No Transaksi", "Tanggal", "Kasir", "Subtotal", "Diskon", "Total", "Metode", "Status"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            int rowNum = 1;
+            for (Sale s : sales) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum - 1);
+                row.createCell(1).setCellValue(s.getTransactionNumber());
+                row.createCell(2).setCellValue(s.getTransactionDate() != null ? s.getTransactionDate().format(DATE_FORMATTER) : "-");
+                row.createCell(3).setCellValue(s.getUserName() != null ? s.getUserName() : "-");
+                row.createCell(4).setCellValue(s.getSubtotal() != null ? s.getSubtotal().doubleValue() : 0.0);
+                row.createCell(5).setCellValue(s.getDiscount() != null ? s.getDiscount().doubleValue() : 0.0);
+                row.createCell(6).setCellValue(s.getTotal() != null ? s.getTotal().doubleValue() : 0.0);
+                row.createCell(7).setCellValue(s.getPaymentMethod() != null ? s.getPaymentMethod() : "-");
+                row.createCell(8).setCellValue(s.getStatus() != null ? s.getStatus().name() : "-");
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            workbook.write(baos);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -3,9 +3,11 @@ package com.ibuinem.pos.service;
 import com.ibuinem.pos.dao.ShippingDAO;
 import com.ibuinem.pos.model.DeliveryLog;
 import com.ibuinem.pos.model.Shipping;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ShippingService {
 
     private final ShippingDAO shippingDAO = new ShippingDAO();

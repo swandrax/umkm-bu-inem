@@ -1,5 +1,10 @@
 <?php
-// api.php - Backend API for Web Customer Order
+/**
+ * @deprecated This legacy PHP endpoint has been modernized and migrated to the Java 21 Spring Boot REST API
+ * (/api/v1/products, /api/v1/categories, /api/v1/sales, /api/v1/customers).
+ * Preserved for backwards compatibility.
+ */
+header('X-API-Deprecated: true; modern-endpoint="/api/v1/*"');
 header('Content-Type: application/json');
 require_once 'config.php';
 

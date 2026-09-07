@@ -62,6 +62,50 @@ public class CustomerDAO {
         return false;
     }
 
+    public Customer getByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return null;
+        String sql = "SELECT * FROM customers WHERE phone = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, phone.trim());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToCustomer(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean update(Customer customer) {
+        String sql = "UPDATE customers SET name = ?, phone = ?, address = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, customer.getName());
+            pstmt.setString(2, customer.getPhone());
+            pstmt.setString(3, customer.getAddress());
+            pstmt.setInt(4, customer.getId());
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean delete(int id) {
+        String sql = "DELETE FROM customers WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean addPoints(int customerId, int points) {
         String sql = "UPDATE customers SET loyalty_points = loyalty_points + ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();

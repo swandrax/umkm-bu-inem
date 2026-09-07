@@ -12,7 +12,7 @@ public class PackageDAO {
 
     public List<PackageModel> getAllActive() {
         List<PackageModel> pkgs = new ArrayList<>();
-        String sql = "SELECT * FROM packages WHERE active = 1 ORDER BY price ASC";
+        String sql = "SELECT * FROM packages WHERE active = true ORDER BY price ASC";
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {

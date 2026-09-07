@@ -29,7 +29,7 @@ public class ProductDAO {
         );
 
         if (onlyActive) {
-            sql.append("AND p.active = 1 ");
+            sql.append("AND p.active = true ");
         }
 
         if (categoryId > 0) {
@@ -162,8 +162,8 @@ public class ProductDAO {
     }
 
     public boolean delete(int id) {
-        // Soft delete (setting active = 0) to maintain transaction history integrity
-        String sql = "UPDATE products SET active = 0 WHERE id = ?";
+        // Soft delete (setting active = false) to maintain transaction history integrity
+        String sql = "UPDATE products SET active = false WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -227,7 +227,7 @@ public class ProductDAO {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT p.*, c.name AS category_name FROM products p " +
                      "JOIN categories c ON p.category_id = c.id " +
-                     "WHERE p.active = 1 AND p.stock <= ? ORDER BY p.stock ASC";
+                     "WHERE p.active = true AND p.stock <= ? ORDER BY p.stock ASC";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, threshold);
