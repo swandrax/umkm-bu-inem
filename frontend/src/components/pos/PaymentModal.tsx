@@ -14,6 +14,7 @@ import {
 import { useCartStore } from "@/stores/cart.store";
 import { useCreateTransactionMutation } from "@/hooks/useTransactions";
 import { formatRupiah } from "@/lib/utils";
+import type { PaymentMethod } from "@/types/sales";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export default function PaymentModal({
         packageId: null,
         discount,
         tax: getTaxAmount(),
-        paymentMethod: paymentMethod as any,
+        paymentMethod: paymentMethod as PaymentMethod,
         cashAmount: isCash ? cashAmount : grandTotal,
         items: items.map((i) => ({
           productId: i.product.id,

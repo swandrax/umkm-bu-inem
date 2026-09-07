@@ -7,8 +7,9 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   flexRender,
+  type ColumnDef,
+  type SortingState,
 } from "@tanstack/react-table";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   Truck,
   Search,
