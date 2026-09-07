@@ -116,11 +116,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/analytics/**").hasRole("ADMIN")
                 // Endpoints shared by CASHIER and ADMIN
                 .requestMatchers("/api/v1/auth/**").authenticated()
+                .requestMatchers("/api/v1/dashboard/**").authenticated()
                 .requestMatchers("/api/v1/products/**").authenticated()
                 .requestMatchers("/api/v1/categories/**").authenticated()
                 .requestMatchers("/api/v1/customers/**").authenticated()
                 .requestMatchers("/api/v1/packages/**").authenticated()
-                .requestMatchers("/api/v1/sales/**").authenticated()
+                .requestMatchers("/api/v1/sales/**", "/api/v1/transactions/**").authenticated()
                 .requestMatchers("/api/v1/payments/**").authenticated()
                 .requestMatchers("/api/v1/shipping/**").authenticated()
                 // Any other request must be authenticated

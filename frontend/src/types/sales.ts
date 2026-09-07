@@ -8,14 +8,12 @@ export type PaymentMethod =
   | "DANA"
   | "SHOPEEPAY";
 
+import { Product } from "./product";
+
 export interface CartItem {
-  productId: number;
-  productCode: string;
-  productName: string;
-  price: number;
+  product: Product;
   quantity: number;
   subtotal: number;
-  stock: number;
 }
 
 export interface ShippingInput {
@@ -41,6 +39,8 @@ export interface CheckoutRequest {
   }[];
   shipping?: ShippingInput;
 }
+
+export type CheckoutPayload = CheckoutRequest;
 
 export interface SaleDetail {
   id: number;

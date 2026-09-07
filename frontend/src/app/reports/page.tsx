@@ -8,7 +8,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/client";
 import { ReportData } from "@/types/analytics";
 import { formatRupiah, formatDate } from "@/lib/utils";
 
@@ -107,11 +107,11 @@ export default function ReportsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-amber-500" />
             <span>Laporan Penjualan & Ekspor</span>
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
             Unduh rekapitulasi data penjualan dalam format CSV (BMC Analytics), Excel, dan PDF
           </p>
         </div>
@@ -119,64 +119,88 @@ export default function ReportsPage() {
         {/* Export Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <button
-            type="button"
             onClick={handleExportCsv}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700 transition-all active:scale-95 cursor-pointer"
-            title="Export data mingguan berformat CSV untuk Business Model Canvas (BMC) & Analisis Bisnis"
+            title="Download format CSV untuk BMC Bisnis & Data Analytics Mingguan"
+            className="flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-800 shadow-xs hover:bg-emerald-100 transition-colors cursor-pointer"
           >
-            <Download className="h-4 w-4" />
-            <span>Export CSV (BMC Analytics)</span>
+            <Download className="h-4 w-4 text-emerald-600" />
+            <span>Ekspor CSV (BMC Analytics)</span>
           </button>
+
           <button
-            type="button"
             onClick={handleExportExcel}
-            className="flex items-center gap-2 rounded-2xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-white px-3.5 py-2 text-xs font-bold text-emerald-700 shadow-xs hover:border-emerald-500 hover:text-emerald-800 transition-colors cursor-pointer"
           >
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Export Excel</span>
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+            <span>Excel (.xlsx)</span>
           </button>
+
           <button
-            type="button"
             onClick={handleExportPdf}
-            className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:border-amber-500 hover:text-amber-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-700 transition-colors cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs hover:border-amber-500 hover:text-amber-600 transition-colors cursor-pointer"
           >
             <FileText className="h-4 w-4 text-rose-500" />
-            <span>Export PDF</span>
+            <span>PDF Struk</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs & Period Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-3xl border border-stone-200 bg-white shadow-xs dark:border-stone-800 dark:bg-stone-900">
-        <div className="flex gap-2">
+      {/* Filter / Tabs Card */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-3xl border border-stone-200 bg-white shadow-xs">
+        <div className="flex items-center gap-2">
           {(["daily", "weekly", "monthly"] as ReportTab[]).map((tab) => (
             <button
               key={tab}
-              type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
-                  : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
               {tab === "daily"
-                ? "Laporan Harian"
+                ? "Harian"
                 : tab === "weekly"
-                ? "Laporan Mingguan"
-                : "Laporan Bulanan"}
+                ? "Mingguan"
+                : "Bulanan"}
             </button>
           ))}
         </div>
 
-        {/* Date Selector based on Tab */}
-        <div className="flex items-center gap-3 text-xs">
-          {activeTab === "monthly" ? (
+        {/* Dynamic Controls based on tab */}
+        <div className="flex items-center gap-3">
+          {activeTab === "daily" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-stone-500 font-medium">Tanggal:</span>
+              <input
+                type="date"
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs text-stone-800 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          )}
+
+          {activeTab === "weekly" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-stone-500 font-medium">
+                Mulai Minggu:
+              </span>
+              <input
+                type="date"
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs text-stone-800 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          )}
+
+          {activeTab === "monthly" && (
             <div className="flex items-center gap-2">
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs text-stone-800 focus:outline-none focus:border-amber-500"
               >
                 {[
                   "Januari",
@@ -191,118 +215,101 @@ export default function ReportsPage() {
                   "Oktober",
                   "November",
                   "Desember",
-                ].map((monthName, idx) => (
-                  <option key={idx + 1} value={idx + 1}>
-                    {monthName}
+                ].map((m, idx) => (
+                  <option key={m} value={idx + 1}>
+                    {m}
                   </option>
                 ))}
               </select>
-              <select
+              <input
+                type="number"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs dark:border-stone-700 dark:bg-stone-800 dark:text-white"
-              >
-                {[2024, 2025, 2026, 2027].map((yr) => (
-                  <option key={yr} value={yr}>
-                    {yr}
-                  </option>
-                ))}
-              </select>
+                className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs text-stone-800 focus:outline-none focus:border-amber-500 w-20"
+              />
             </div>
-          ) : (
-            <input
-              type="date"
-              value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className="rounded-xl border border-stone-200 bg-stone-50 py-2 px-3 text-xs dark:border-stone-700 dark:bg-stone-800 dark:text-white"
-            />
           )}
         </div>
       </div>
 
-      {/* Summary KPI Banner */}
+      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-5 rounded-3xl border border-stone-200 bg-white shadow-xs dark:border-stone-800 dark:bg-stone-900">
-          <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-            Total Pendapatan ({reportData?.period || "Periode"})
-          </span>
-          <div className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400 mt-1">
+        <div className="p-5 rounded-3xl border border-stone-200 bg-white shadow-xs">
+          <div className="text-xs font-bold uppercase tracking-wider text-stone-500">
+            Total Omset Penjualan
+          </div>
+          <div className="text-2xl font-black font-mono text-amber-600 mt-1">
             {formatRupiah(totalRevenue)}
           </div>
         </div>
 
-        <div className="p-5 rounded-3xl border border-stone-200 bg-white shadow-xs dark:border-stone-800 dark:bg-stone-900">
-          <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-            Total Transaksi Selesai
-          </span>
-          <div className="text-2xl font-black font-mono text-stone-900 dark:text-white mt-1">
-            {reportData?.totalTransactions || 0} Nota
+        <div className="p-5 rounded-3xl border border-stone-200 bg-white shadow-xs">
+          <div className="text-xs font-bold uppercase tracking-wider text-stone-500">
+            Total Transaksi
+          </div>
+          <div className="text-2xl font-black font-mono text-stone-900 mt-1">
+            {reportData?.sales?.length || 0}
           </div>
         </div>
       </div>
 
-      {/* Sales Table */}
-      <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      {/* Table of Transactions */}
+      <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
+          <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-stone-200 bg-stone-50/75 dark:border-stone-800 dark:bg-stone-950/40 text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400 font-bold">
-                <th className="py-3.5 px-4">No. Transaksi</th>
-                <th className="py-3.5 px-4">Waktu</th>
-                <th className="py-3.5 px-4">Kasir</th>
-                <th className="py-3.5 px-4">Metode Bayar</th>
-                <th className="py-3.5 px-4 text-right">Subtotal</th>
-                <th className="py-3.5 px-4 text-right">Diskon</th>
-                <th className="py-3.5 px-4 text-right">Grand Total</th>
+              <tr className="border-b border-stone-200 bg-stone-50/75 text-[11px] uppercase tracking-wider text-stone-500 font-bold">
+                <th className="py-3 px-4">No. Transaksi</th>
+                <th className="py-3 px-4">Waktu</th>
+                <th className="py-3 px-4">Kasir</th>
+                <th className="py-3 px-4">Metode Bayar</th>
+                <th className="py-3 px-4 text-right">Total</th>
+                <th className="py-3 px-4">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
+            <tbody className="divide-y divide-stone-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-stone-400">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-                      <span>Memuat data laporan...</span>
-                    </div>
+                  <td colSpan={6} className="py-8 text-center text-stone-400">
+                    Memuat data rekap penjualan...
                   </td>
                 </tr>
-              ) : !reportData?.sales || reportData.sales.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-stone-400 text-sm">
-                    Tidak ada catatan transaksi pada periode ini
-                  </td>
-                </tr>
-              ) : (
+              ) : reportData?.sales && reportData.sales.length > 0 ? (
                 reportData.sales.map((s) => (
                   <tr
                     key={s.id}
-                    className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors"
+                    className="hover:bg-amber-50/30 transition-colors"
                   >
-                    <td className="py-3 px-4 font-mono font-bold text-amber-600 dark:text-amber-400 text-xs">
+                    <td className="py-3 px-4 font-mono font-bold text-amber-600 text-xs">
                       {s.transactionNumber}
                     </td>
-                    <td className="py-3 px-4 text-xs text-stone-600 dark:text-stone-300">
+                    <td className="py-3 px-4 text-xs text-stone-600">
                       {formatDate(s.transactionDate)}
                     </td>
-                    <td className="py-3 px-4 text-xs text-stone-900 dark:text-white">
+                    <td className="py-3 px-4 text-xs font-medium text-stone-900">
                       {s.userName || "Kasir"}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-[10px] font-mono font-bold text-stone-700 dark:text-stone-300 uppercase">
+                      <span className="inline-flex px-2 py-0.5 rounded-md bg-stone-100 text-[10px] font-mono font-bold text-stone-700 uppercase">
                         {s.paymentMethod}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right font-mono text-xs text-stone-600 dark:text-stone-300">
-                      {formatRupiah(s.subtotal)}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-xs text-rose-500">
-                      {s.discount > 0 ? `-${formatRupiah(s.discount)}` : "-"}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-stone-900 dark:text-white">
+                    <td className="py-3 px-4 text-right font-mono font-bold text-stone-900">
                       {formatRupiah(s.total)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                        {s.status}
+                      </span>
                     </td>
                   </tr>
                 ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-stone-400">
+                    Tidak ada transaksi penjualan pada periode ini.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

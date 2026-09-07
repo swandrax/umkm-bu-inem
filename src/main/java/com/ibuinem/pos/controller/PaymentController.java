@@ -17,6 +17,12 @@ public class PaymentController {
 
     private final PaymentDAO paymentDAO = new PaymentDAO();
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<Payment>>> getAllPayments() {
+        List<Payment> payments = paymentDAO.getAll();
+        return ResponseEntity.ok(ApiResponse.success("Data pembayaran berhasil diambil", payments));
+    }
+
     @GetMapping("/sale/{saleId}")
     public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsBySaleId(@PathVariable int saleId) {
         List<Payment> payments = paymentDAO.getBySaleId(saleId);

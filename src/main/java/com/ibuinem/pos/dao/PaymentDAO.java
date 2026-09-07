@@ -31,6 +31,21 @@ public class PaymentDAO {
         return false;
     }
 
+    public List<Payment> getAll() {
+        List<Payment> list = new ArrayList<>();
+        String sql = "SELECT * FROM payments ORDER BY id DESC LIMIT 200";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapResultSetToPayment(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public List<Payment> getBySaleId(int saleId) {
         List<Payment> list = new ArrayList<>();
         String sql = "SELECT * FROM payments WHERE sale_id = ? ORDER BY id ASC";

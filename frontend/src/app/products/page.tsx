@@ -1,7 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useMemo, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  ColumnDef,
+  SortingState,
+} from "@tanstack/react-table";
 import {
   Package,
   Plus,
@@ -9,157 +19,283 @@ import {
   Edit2,
   Trash2,
   AlertCircle,
-  X,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
-import { Product, ProductInput } from "@/types/product";
-import { Category } from "@/types/category";
+import {
+  useProductsQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} from "@/hooks/useProducts";
+import { useCategoriesQuery } from "@/hooks/useCategories";
+import { productSchema, ProductFormValues } from "@/schemas/product.schema";
+import { Product } from "@/types/product";
 import { formatRupiah } from "@/lib/utils";
+import { Badge } from "@/components/ui/Badge";
+import { Modal } from "@/components/ui/Modal";
 
 export default function ProductsPage() {
-  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // Form fields
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [categoryId, setCategoryId] = useState<number>(0);
-  const [price, setPrice] = useState<number>(0);
-  const [stock, setStock] = useState<number>(0);
-  const [active, setActive] = useState(true);
-
-  // Fetch Categories
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => apiClient.get<Category[]>("/categories"),
-  });
-
-  // Fetch Products
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", selectedCategory, search],
-    queryFn: () => {
-      const params = new URLSearchParams();
-      if (search) params.append("search", search);
-      if (selectedCategory) params.append("categoryId", selectedCategory);
-      return apiClient.get<Product[]>(`/products?${params.toString()}`);
-    },
+  // Queries
+  const { data: categories = [] } = useCategoriesQuery();
+  const { data: products = [], isLoading, isError, refetch } = useProductsQuery({
+    query: search,
+    categoryId: selectedCategory,
   });
 
   // Mutations
-  const saveMutation = useMutation({
-    mutationFn: (data: ProductInput) => {
-      if (editingProduct) {
-        return apiClient.put(`/products/${editingProduct.id}`, data);
-      }
-      return apiClient.post("/products", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      closeModal();
-    },
-    onError: (err: unknown) => {
-      setModalError(err instanceof Error ? err.message : "Gagal menyimpan produk");
-    },
-  });
+  const createMutation = useCreateProductMutation();
+  const updateMutation = useUpdateProductMutation();
+  const deleteMutation = useDeleteProductMutation();
 
-  const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, currentActive }: { id: number; currentActive: boolean }) =>
-      apiClient.put(`/products/${id}`, {
-        active: !currentActive,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiClient.delete(`/products/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+  // Form
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      code: "",
+      name: "",
+      categoryId: 1,
+      price: 0,
+      stock: 0,
+      active: true,
     },
   });
 
   const openCreateModal = () => {
     setEditingProduct(null);
-    setCode(`PRD-${Math.floor(100 + Math.random() * 900)}`);
-    setName("");
-    setCategoryId(categories[0]?.id || 1);
-    setPrice(0);
-    setStock(10);
-    setActive(true);
     setModalError(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (p: Product) => {
-    setEditingProduct(p);
-    setCode(p.code);
-    setName(p.name);
-    setCategoryId(p.categoryId);
-    setPrice(p.price);
-    setStock(p.stock);
-    setActive(p.active);
-    setModalError(null);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingProduct(null);
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      setModalError("Nama produk wajib diisi");
-      return;
-    }
-    if (price < 0 || stock < 0) {
-      setModalError("Harga dan stok tidak boleh negatif");
-      return;
-    }
-
-    saveMutation.mutate({
-      code,
-      name,
-      categoryId,
-      price,
-      stock,
-      active,
+    reset({
+      code: `SNK-${String(products.length + 1).padStart(3, "0")}`,
+      name: "",
+      categoryId: categories[0]?.id || 1,
+      price: 0,
+      stock: 0,
+      active: true,
     });
+    setIsModalOpen(true);
   };
+
+  const openEditModal = useCallback((p: Product) => {
+    setEditingProduct(p);
+    setModalError(null);
+    reset({
+      code: p.code,
+      name: p.name,
+      categoryId: p.categoryId,
+      price: p.price,
+      stock: p.stock,
+      active: p.active,
+    });
+    setIsModalOpen(true);
+  }, [reset]);
+
+  const onFormSubmit = async (data: ProductFormValues) => {
+    setModalError(null);
+    try {
+      if (editingProduct) {
+        await updateMutation.mutateAsync({
+          id: editingProduct.id,
+          data,
+        });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      setModalError(err instanceof Error ? err.message : "Gagal menyimpan produk");
+    }
+  };
+
+  const handleDelete = useCallback(async (id: number, name: string) => {
+    if (confirm(`Yakin ingin menonaktifkan produk "${name}"?`)) {
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (err: unknown) {
+        alert(err instanceof Error ? err.message : "Gagal menghapus produk");
+      }
+    }
+  }, [deleteMutation]);
+
+  // TanStack Table Columns
+  const columns = useMemo<ColumnDef<Product>[]>(
+    () => [
+      {
+        accessorKey: "code",
+        header: "Kode",
+        cell: (info) => (
+          <span className="font-mono text-xs font-bold text-stone-700">
+            {info.getValue() as string}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: ({ column }) => (
+          <button
+            type="button"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-1 font-bold text-stone-700 hover:text-stone-900 cursor-pointer"
+          >
+            <span>Nama Jajanan</span>
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        ),
+        cell: (info) => (
+          <div>
+            <span className="font-bold text-stone-900 text-xs sm:text-sm">
+              {info.getValue() as string}
+            </span>
+            <p className="text-[11px] text-stone-500">
+              {info.row.original.categoryName || "Umum"}
+            </p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "price",
+        header: ({ column }) => (
+          <button
+            type="button"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-1 font-bold text-stone-700 hover:text-stone-900 cursor-pointer"
+          >
+            <span>Harga Jual</span>
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        ),
+        cell: (info) => (
+          <span className="font-mono font-bold text-orange-700 text-xs sm:text-sm">
+            {formatRupiah(info.getValue() as number)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "stock",
+        header: ({ column }) => (
+          <button
+            type="button"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-1 font-bold text-stone-700 hover:text-stone-900 cursor-pointer"
+          >
+            <span>Stok</span>
+            <ArrowUpDown className="h-3 w-3" />
+          </button>
+        ),
+        cell: (info) => {
+          const stock = info.getValue() as number;
+          return (
+            <span
+              className={`font-mono font-bold text-xs sm:text-sm ${
+                stock <= 5 ? "text-rose-600" : "text-stone-800"
+              }`}
+            >
+              {stock} Pcs
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "active",
+        header: "Status",
+        cell: (info) => {
+          const active = info.getValue() as boolean;
+          return active ? (
+            <Badge variant="success">Aktif</Badge>
+          ) : (
+            <Badge variant="danger">Nonaktif</Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => {
+          const p = row.original;
+          return (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => openEditModal(p)}
+                className="p-1.5 rounded-xl border border-stone-200 text-stone-600 hover:text-amber-600 hover:border-amber-300 transition-colors cursor-pointer"
+                title="Edit Produk"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+              </button>
+              {p.active && (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(p.id, p.name)}
+                  className="p-1.5 rounded-xl border border-stone-200 text-stone-600 hover:text-rose-600 hover:border-rose-300 transition-colors cursor-pointer"
+                  title="Nonaktifkan Produk"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [handleDelete, openEditModal]
+  );
+
+  const table = useReactTable({
+    data: products,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
 
   return (
-    <div className="space-y-5">
-      {/* Top Header */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
             <Package className="h-6 w-6 text-amber-500" />
             <span>Master Data Produk</span>
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-            Kelola katalog produk, harga jual, stok, dan barcode UMKM
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5 font-medium">
+            Kelola katalog jajanan, penetapan harga, dan pemantauan stok real-time
           </p>
         </div>
 
         <button
           type="button"
           onClick={openCreateModal}
-          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700 transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700 transition-all active:scale-95 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          <span>Tambah Produk Baru</span>
+          <span>Tambah Jajanan</span>
         </button>
       </div>
 
-      {/* Filters Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      {/* Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-3xl border border-stone-200/80 bg-white shadow-xs">
+        <div className="relative w-full sm:w-80">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-stone-400">
             <Search className="h-4 w-4" />
           </div>
@@ -167,271 +303,232 @@ export default function ProductsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari kode atau nama produk..."
-            className="w-full rounded-2xl border border-stone-200 bg-white py-2.5 pl-10 pr-4 text-sm text-stone-900 shadow-xs focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:border-stone-800 dark:bg-stone-900 dark:text-white"
+            placeholder="Cari kode atau nama jajanan..."
+            className="w-full rounded-2xl border border-stone-200 bg-stone-50/60 py-2 pl-10 pr-4 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-200/50"
           />
         </div>
 
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="rounded-2xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-xs focus:border-amber-500 focus:outline-none dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300"
-        >
-          <option value="">Semua Kategori</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(Number(e.target.value))}
+            className="w-full sm:w-48 rounded-2xl border border-stone-200 bg-stone-50/60 px-3 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-amber-500"
+          >
+            <option value={0}>Semua Kategori</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Data Table */}
-      <div className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-stone-200 bg-stone-50/75 dark:border-stone-800 dark:bg-stone-950/40 text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400 font-bold">
-                <th className="py-3.5 px-4">Kode</th>
-                <th className="py-3.5 px-4">Nama Produk</th>
-                <th className="py-3.5 px-4">Kategori</th>
-                <th className="py-3.5 px-4 text-right">Harga</th>
-                <th className="py-3.5 px-4 text-center">Stok</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-stone-400">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-                      <span>Memuat data produk...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : products.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-stone-400 text-sm">
-                    Belum ada produk terdaftar
-                  </td>
-                </tr>
-              ) : (
-                products.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors"
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-amber-600 dark:text-amber-400 text-xs">
-                      {product.code}
-                    </td>
-                    <td className="py-3 px-4 font-bold text-stone-900 dark:text-white">
-                      {product.name}
-                    </td>
-                    <td className="py-3 px-4 text-stone-600 dark:text-stone-400 text-xs font-medium">
-                      {product.categoryName || "-"}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-stone-900 dark:text-stone-100">
-                      {formatRupiah(product.price)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold font-mono ${
-                          product.stock <= 0
-                            ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
-                            : product.stock <= 5
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
-                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
-                        }`}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleStatusMutation.mutate({
-                            id: product.id,
-                            currentActive: product.active,
-                          })
-                        }
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer ${
-                          product.active
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                            : "bg-stone-200 text-stone-600 dark:bg-stone-800 dark:text-stone-400"
-                        }`}
-                      >
-                        {product.active ? "Aktif" : "Non-Aktif"}
-                      </button>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(product)}
-                          className="p-1.5 rounded-lg text-stone-500 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10 dark:hover:text-amber-400 transition-colors"
-                          title="Edit Produk"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Yakin ingin menghapus produk "${product.name}"?`)) {
-                              deleteMutation.mutate(product.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-lg text-stone-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 transition-colors"
-                          title="Hapus Produk"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+      {/* Table Box */}
+      <div className="rounded-3xl border border-stone-200/80 bg-white shadow-xs overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-xs text-stone-400">Memuat data produk...</div>
+        ) : isError ? (
+          <div className="p-12 text-center text-xs text-rose-500 space-y-2">
+            <p>Gagal memuat produk dari server.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1 bg-stone-100 border border-stone-200 rounded-xl font-bold"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead className="bg-stone-50 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-600">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id} className="py-3.5 px-4 font-bold">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="hover:bg-stone-50/60 transition-colors">
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="py-3 px-4">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={columns.length} className="text-center py-12 text-stone-400">
+                      Tidak ada data produk yang sesuai.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-stone-100 text-xs text-stone-500 font-medium">
+          <div>
+            Menampilkan halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+            {Math.max(1, table.getPageCount())} ({products.length} total produk)
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="p-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="p-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Add / Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl bg-stone-900 border border-stone-800 shadow-2xl p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="font-bold text-lg text-white">
-                {editingProduct ? "Edit Master Produk" : "Tambah Produk Baru"}
-              </h3>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="text-stone-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </button>
+      {/* Product Form Modal (React Hook Form + Zod) */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingProduct ? "Edit Data Jajanan" : "Tambah Jajanan Baru"}
+      >
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+          {modalError && (
+            <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700 font-medium">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+              <span>{modalError}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Kode Produk *
+              </label>
+              <input
+                type="text"
+                {...register("code")}
+                placeholder="SNK-001"
+                className="w-full rounded-xl border border-stone-300 bg-white p-2.5 text-xs sm:text-sm font-mono text-stone-900 focus:outline-none focus:border-amber-500"
+              />
+              {errors.code && (
+                <p className="text-[11px] text-rose-600 font-medium">{errors.code.message}</p>
+              )}
             </div>
 
-            {modalError && (
-              <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-300">
-                <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
-                <span>{modalError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-stone-300">
-                    Kode Produk
-                  </label>
-                  <input
-                    type="text"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-full rounded-xl border border-stone-700 bg-stone-800 py-2 px-3 text-sm font-mono text-white focus:border-amber-500 focus:outline-none"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-stone-300">
-                    Kategori
-                  </label>
-                  <select
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(Number(e.target.value))}
-                    className="w-full rounded-xl border border-stone-700 bg-stone-800 py-2 px-3 text-sm text-white focus:border-amber-500 focus:outline-none"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-300">
-                  Nama Produk
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Lemper Ayam Spesial"
-                  className="w-full rounded-xl border border-stone-700 bg-stone-800 py-2 px-3 text-sm text-white focus:border-amber-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-stone-300">
-                    Harga Jual (Rp)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={price || ""}
-                    onChange={(e) => setPrice(Number(e.target.value))}
-                    placeholder="0"
-                    className="w-full rounded-xl border border-stone-700 bg-stone-800 py-2 px-3 text-sm font-mono text-white focus:border-amber-500 focus:outline-none"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-stone-300">
-                    Stok Tersedia
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={stock || ""}
-                    onChange={(e) => setStock(Number(e.target.value))}
-                    placeholder="0"
-                    className="w-full rounded-xl border border-stone-700 bg-stone-800 py-2 px-3 text-sm font-mono text-white focus:border-amber-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="productActive"
-                  checked={active}
-                  onChange={(e) => setActive(e.target.checked)}
-                  className="h-4 w-4 rounded-sm border-stone-700 text-amber-500 focus:ring-amber-500"
-                />
-                <label htmlFor="productActive" className="text-xs text-stone-300 font-semibold cursor-pointer">
-                  Status Produk Aktif (Dapat dijual di POS)
-                </label>
-              </div>
-
-              <div className="flex gap-3 pt-3 border-t border-stone-800">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-xl border border-stone-700 bg-stone-800 px-4 py-2 text-xs font-bold text-stone-300 hover:bg-stone-700"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={saveMutation.isPending}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700 disabled:opacity-50"
-                >
-                  {saveMutation.isPending ? "Menyimpan..." : "Simpan Produk"}
-                </button>
-              </div>
-            </form>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Kategori *
+              </label>
+              <select
+                {...register("categoryId", { valueAsNumber: true })}
+                className="w-full rounded-xl border border-stone-300 bg-white p-2.5 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-amber-500"
+              >
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {errors.categoryId && (
+                <p className="text-[11px] text-rose-600 font-medium">{errors.categoryId.message}</p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+              Nama Jajanan *
+            </label>
+            <input
+              type="text"
+              {...register("name")}
+              placeholder="Contoh: Lemper Ayam Spesial"
+              className="w-full rounded-xl border border-stone-300 bg-white p-2.5 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-amber-500"
+            />
+            {errors.name && (
+              <p className="text-[11px] text-rose-600 font-medium">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Harga Jual (Rp) *
+              </label>
+              <input
+                type="number"
+                {...register("price", { valueAsNumber: true })}
+                placeholder="0"
+                className="w-full rounded-xl border border-stone-300 bg-white p-2.5 text-xs sm:text-sm font-mono text-stone-900 focus:outline-none focus:border-amber-500"
+              />
+              {errors.price && (
+                <p className="text-[11px] text-rose-600 font-medium">{errors.price.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Stok Awal (Pcs) *
+              </label>
+              <input
+                type="number"
+                {...register("stock", { valueAsNumber: true })}
+                placeholder="0"
+                className="w-full rounded-xl border border-stone-300 bg-white p-2.5 text-xs sm:text-sm font-mono text-stone-900 focus:outline-none focus:border-amber-500"
+              />
+              {errors.stock && (
+                <p className="text-[11px] text-rose-600 font-medium">{errors.stock.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="activeCheckbox"
+              {...register("active")}
+              className="h-4 w-4 rounded border-stone-300 text-amber-500 focus:ring-amber-400"
+            />
+            <label htmlFor="activeCheckbox" className="text-xs font-semibold text-stone-700">
+              Produk Aktif (Tersedia untuk dijual di Kasir)
+            </label>
+          </div>
+
+          <div className="flex gap-2 pt-3 border-t border-stone-100">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="flex-1 py-2.5 rounded-xl border border-stone-200 text-xs font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-2 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmitting ? "Menyimpan..." : "Simpan Produk"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
