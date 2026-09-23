@@ -24,7 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flatlaf.version>3.5.1</flatlaf.version>
         <mysql.version>9.0.0</mysql.version>
-        <zxing.version>3.5.3</zxing.version>
+        <zxing.version>3.5.4</zxing.version>
         <pdfbox.version>3.0.3</pdfbox.version>
         <javafx.version>21.0.2</javafx.version>
         <poi.version>5.2.5</poi.version>
