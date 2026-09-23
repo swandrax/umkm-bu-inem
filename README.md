@@ -10,6 +10,8 @@ Role `SUPER_ADMIN`, `ADMIN`, `CASHIER`, dan `CUSTOMER`, desain voucher dua hari 
 
 ## Operasional, CI/CD, dan Skalabilitas
 
+> 📖 **Panduan Deployment VPS Lengkap**: Lihat [DEPLOYMENT.md](DEPLOYMENT.md) untuk panduan step-by-step setup VPS (IDCloudHost / Ubuntu), konfigurasi swap, firewall, domain, HTTPS otomatis, dan backup database.
+
 Jalankan secara lokal/VPS dengan Docker:
 
 1. Salin `.env.example` menjadi `.env`, isi secret unik; `JWT_SECRET` minimal 32 byte dan semua password wajib diganti.
