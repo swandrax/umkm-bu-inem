@@ -22,7 +22,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flatlaf.version>3.5.1</flatlaf.version>
+        <flatlaf.version>3.7.2</flatlaf.version>
         <mysql.version>9.0.0</mysql.version>
         <zxing.version>3.5.3</zxing.version>
         <pdfbox.version>3.0.3</pdfbox.version>
