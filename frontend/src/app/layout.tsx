@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "onsenui/css/onsenui.css";
-import "onsenui/css/onsen-css-components.css";
 import QueryProvider from "@/providers/QueryProvider";
 import AppShell from "@/components/layout/AppShell";
 
