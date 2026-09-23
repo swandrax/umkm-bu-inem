@@ -24,7 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>9.0.0</mysql.version>
         <zxing.version>3.5.3</zxing.version>
-        <pdfbox.version>3.0.3</pdfbox.version>
+        <pdfbox.version>3.0.8</pdfbox.version>
         <poi.version>5.2.5</poi.version>
         <jjwt.version>0.12.6</jjwt.version>
     </properties>
