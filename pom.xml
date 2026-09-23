@@ -22,11 +22,9 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flatlaf.version>3.5.1</flatlaf.version>
         <mysql.version>9.0.0</mysql.version>
         <zxing.version>3.5.3</zxing.version>
         <pdfbox.version>3.0.3</pdfbox.version>
-        <javafx.version>21.0.2</javafx.version>
         <poi.version>5.2.5</poi.version>
         <jjwt.version>0.12.6</jjwt.version>
     </properties>
@@ -82,18 +80,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- FlatLaf Modern Swing Look and Feel -->
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>${flatlaf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf-extras</artifactId>
-            <version>${flatlaf.version}</version>
-        </dependency>
-
         <!-- MySQL Connector/J -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -125,18 +111,6 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
-        </dependency>
-
-        <!-- OpenJFX for JavaFX Charts in Swing -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>${javafx.version}</version>
         </dependency>
 
         <!-- Apache POI for Excel Export -->

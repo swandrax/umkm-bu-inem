@@ -18,7 +18,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:dev-only-secret-min-32-bytes-change-in-production!!}
     expiration-ms: ${JWT_EXPIRATION:900000} # 15 menit
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
