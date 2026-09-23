@@ -1,4 +1,4 @@
-FROM node:22.14.0-bookworm-slim AS build
+FROM node:26.9.0-bookworm-slim AS build
 WORKDIR /app
 ARG NEXT_PUBLIC_API_URL=/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
@@ -7,7 +7,7 @@ RUN npm ci --ignore-scripts
 COPY . .
 RUN npm run build
 
-FROM node:22.14.0-bookworm-slim
+FROM node:26.9.0-bookworm-slim
 ENV NODE_ENV=production
 WORKDIR /app
 RUN groupadd --system nextjs && useradd --system --gid nextjs nextjs
