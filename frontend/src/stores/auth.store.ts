@@ -43,27 +43,8 @@ export const useAuthStore = create<AuthState>()(
           });
           return true;
         } catch {
-          // Fallback to dummy user session so user can always enter cashier
-          const isAdmin = username.toLowerCase().includes("admin");
-          const fallbackUser: User = {
-            id: isAdmin ? 1 : 2,
-            username: username || (isAdmin ? "admin" : "kasir"),
-            fullName: isAdmin ? "Ibu Inem (Admin)" : (username ? `${username} (Kasir)` : "Siti Rahma (Kasir)"),
-            role: isAdmin ? "ADMIN" : "CASHIER",
-            active: true,
-          };
-          const dummyToken = "dummy-jwt-token-" + Date.now();
-          if (typeof window !== "undefined") {
-            localStorage.setItem("jajanan_token", dummyToken);
-          }
-          set({
-            token: dummyToken,
-            user: fallbackUser,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-          return true;
+          set({ isLoading: false, error: "Login gagal. Periksa kredensial atau koneksi server." });
+          return false;
         }
       },
 
@@ -83,26 +64,8 @@ export const useAuthStore = create<AuthState>()(
           });
           return true;
         } catch {
-          // Fallback to dummy user session so user can immediately enter cashier
-          const fallbackUser: User = {
-            id: Math.floor(Math.random() * 900) + 100,
-            username: username || "kasir",
-            fullName: fullName || "Kasir Baru",
-            role: "CASHIER",
-            active: true,
-          };
-          const dummyToken = "dummy-jwt-token-" + Date.now();
-          if (typeof window !== "undefined") {
-            localStorage.setItem("jajanan_token", dummyToken);
-          }
-          set({
-            token: dummyToken,
-            user: fallbackUser,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-          return true;
+          set({ isLoading: false, error: "Pendaftaran mandiri tidak tersedia. Hubungi Super Admin." });
+          return false;
         }
       },
 
@@ -118,8 +81,8 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      isAdmin: () => get().user?.role === "ADMIN",
-      isCashier: () => get().user?.role === "CASHIER" || get().user?.role === "ADMIN",
+      isAdmin: () => ["SUPER_ADMIN", "ADMIN"].includes(get().user?.role ?? ""),
+      isCashier: () => ["SUPER_ADMIN", "ADMIN", "CASHIER"].includes(get().user?.role ?? ""),
       setUser: (user: User) => set({ user }),
     }),
     {

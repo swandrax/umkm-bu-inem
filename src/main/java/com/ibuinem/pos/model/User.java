@@ -12,8 +12,10 @@ public class User {
     private LocalDateTime createdAt;
 
     public enum Role {
+        SUPER_ADMIN,
         ADMIN,
-        CASHIER
+        CASHIER,
+        CUSTOMER
     }
 
     public User() {}

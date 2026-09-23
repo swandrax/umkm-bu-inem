@@ -8,6 +8,7 @@ import com.ibuinem.pos.exception.BusinessException;
 import com.ibuinem.pos.exception.NotFoundException;
 import com.ibuinem.pos.model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,9 +17,16 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserDAO userDAO;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService() {
+    public UserService(PasswordEncoder passwordEncoder) {
         this.userDAO = new UserDAO();
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /** Dipertahankan untuk klien Swing lama; REST memakai bean Spring di atas. */
+    public UserService() {
+        this(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(12));
     }
 
     public List<UserDto> getAllUserDtos() {
@@ -41,7 +49,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(req.getUsername().trim());
-        user.setPassword(req.getPassword());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setFullName(req.getFullName().trim());
         user.setRole(User.Role.valueOf(req.getRole()));
         user.setActive(req.isActive());
@@ -71,7 +79,7 @@ public class UserService {
         }
 
         if (req.getNewPassword() != null && !req.getNewPassword().trim().isEmpty()) {
-            userDAO.resetPassword(id, req.getNewPassword().trim());
+            userDAO.resetPassword(id, passwordEncoder.encode(req.getNewPassword().trim()));
         }
 
         return new UserDto(userDAO.getById(id));

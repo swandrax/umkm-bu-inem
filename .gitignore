@@ -5,11 +5,18 @@ target/
 .vscode/
 *.log
 
+# Environment secrets — jangan pernah commit .env aktif
+.env
+.env.local
+.env*.local
+
 # Frontend
 node_modules/
 frontend/node_modules/
 frontend/.next/
 frontend/.turbo/
 frontend/out/
-.env.local
-.env*.local
+
+# Security scan reports (lokal)
+dependency-check-report*
+*.sarif

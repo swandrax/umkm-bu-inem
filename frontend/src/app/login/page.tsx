@@ -87,17 +87,11 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setMode("register");
-                setSuccessMsg(null);
-              }}
-              className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                mode === "register"
-                  ? "bg-white text-stone-900 shadow-sm border border-stone-200/60"
-                  : "text-stone-500 hover:text-stone-900"
-              }`}
+              disabled
+              title="Akun dibuat oleh Super Admin"
+              className="py-2 text-xs font-bold rounded-xl text-stone-400 cursor-not-allowed"
             >
-              Daftar Akun Baru
+              Akun oleh Admin
             </button>
           </div>
 
@@ -183,10 +177,8 @@ export default function LoginPage() {
               <div className="pt-2 border-t border-stone-100">
                 <button
                   type="button"
-                  onClick={async () => {
-                    await login("kasir", "kasir123");
-                    router.push("/pos");
-                  }}
+                  disabled
+                  title="Akun dikelola oleh Super Admin"
                   className="w-full py-2.5 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 text-amber-900 text-xs font-bold hover:bg-amber-100/80 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>⚡ Masuk Cepat Sebagai Kasir (Mode Dummy)</span>

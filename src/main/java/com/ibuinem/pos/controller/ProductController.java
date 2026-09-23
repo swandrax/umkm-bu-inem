@@ -67,7 +67,7 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<ApiResponse<ProductDto>> createProduct(@Valid @RequestBody ProductRequest req) {
         ProductDto created = productService.createProduct(req);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -75,7 +75,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@PathVariable int id,
                                                                  @Valid @RequestBody ProductRequest req) {
         ProductDto updated = productService.updateProduct(id, req);
@@ -83,7 +83,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable int id) {
         productService.deleteProductById(id);
         return ResponseEntity.ok(ApiResponse.success("Produk berhasil dinonaktifkan", null));

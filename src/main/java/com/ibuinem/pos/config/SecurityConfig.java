@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -44,28 +45,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new PasswordEncoder() {
-            private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
-
-            @Override
-            public String encode(CharSequence rawPassword) {
-                return bcrypt.encode(rawPassword);
-            }
-
-            @Override
-            public boolean matches(CharSequence rawPassword, String encodedPassword) {
-                if (encodedPassword == null) return false;
-                // Support existing plaintext seed passwords (admin123, kasir123)
-                if (encodedPassword.equals(rawPassword.toString())) {
-                    return true;
-                }
-                // Support BCrypt hashed passwords
-                if (encodedPassword.startsWith("$2a$") || encodedPassword.startsWith("$2b$") || encodedPassword.startsWith("$2y$")) {
-                    return bcrypt.matches(rawPassword, encodedPassword);
-                }
-                return false;
-            }
-        };
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
@@ -84,8 +64,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // API memakai Bearer token di header, bukan cookie sesi.
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .headers(headers -> headers
+                .contentTypeOptions(Customizer.withDefaults())
+                .frameOptions(frame -> frame.deny())
+                .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy", "camera=(), microphone=(), geolocation=()"))
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, authException) -> {
@@ -103,17 +90,17 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // Public auth endpoints
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll()
+                .requestMatchers("/api/v1/auth/login", "/api/v1/webhooks/xendit").permitAll()
                 // Admin-only management endpoints
-                .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")
-                .requestMatchers("/api/v1/reports/**").hasRole("ADMIN")
-                .requestMatchers("/api/v1/analytics/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/users/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers("/api/v1/reports/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                .requestMatchers("/api/v1/analytics/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                 // Endpoints shared by CASHIER and ADMIN
                 .requestMatchers("/api/v1/auth/**").authenticated()
                 .requestMatchers("/api/v1/dashboard/**").authenticated()

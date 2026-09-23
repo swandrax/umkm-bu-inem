@@ -31,7 +31,11 @@ public class SalesController {
     @PostMapping
     public ResponseEntity<ApiResponse<SaleResponseDto>> checkout(@Valid @RequestBody CheckoutRequest req) {
         User currentUser = authService.getCurrentUser();
-        int cashierId = currentUser != null ? currentUser.getId() : 1; // Default admin if fallback
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Sesi tidak valid", "UNAUTHORIZED"));
+        }
+        int cashierId = currentUser.getId();
 
         SaleResponseDto response = saleService.checkout(req, cashierId);
         return ResponseEntity.status(HttpStatus.CREATED)

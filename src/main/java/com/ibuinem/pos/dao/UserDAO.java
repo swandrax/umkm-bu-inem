@@ -9,46 +9,18 @@ import java.util.List;
 
 public class UserDAO {
 
-    private static final java.util.Map<String, User> MEMORY_USERS = new java.util.concurrent.ConcurrentHashMap<>();
-
-    static {
-        User admin = new User();
-        admin.setId(1);
-        admin.setUsername("admin");
-        admin.setPassword("admin123");
-        admin.setFullName("Ibu Inem (Owner)");
-        admin.setRole(User.Role.ADMIN);
-        admin.setActive(true);
-        MEMORY_USERS.put("admin", admin);
-
-        User kasir = new User();
-        kasir.setId(2);
-        kasir.setUsername("kasir");
-        kasir.setPassword("kasir123");
-        kasir.setFullName("Siti Rahma (Kasir)");
-        kasir.setRole(User.Role.CASHIER);
-        kasir.setActive(true);
-        MEMORY_USERS.put("kasir", kasir);
-    }
-
     public User authenticate(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ? AND active = true";
+        // Verifikasi hash dilakukan oleh AuthenticationProvider/AuthService; jangan pernah query password plaintext.
+        String sql = "SELECT * FROM users WHERE username = ? AND active = true";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
-            ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToUser(rs);
                 }
             }
-        } catch (Exception e) {
-            // Fallback to in-memory demo user
-        }
-        User memUser = MEMORY_USERS.get(username);
-        if (memUser != null && memUser.isActive() && memUser.getPassword().equals(password)) {
-            return memUser;
-        }
+        } catch (Exception e) { }
         return null;
     }
 
@@ -62,12 +34,7 @@ public class UserDAO {
                     return mapResultSetToUser(rs);
                 }
             }
-        } catch (Exception e) {
-            // Fallback
-        }
-        for (User u : MEMORY_USERS.values()) {
-            if (u.getId() == id) return u;
-        }
+        } catch (Exception e) { }
         return null;
     }
 
@@ -81,10 +48,8 @@ public class UserDAO {
                     return mapResultSetToUser(rs);
                 }
             }
-        } catch (Exception e) {
-            // Fallback to in-memory
-        }
-        return MEMORY_USERS.get(username);
+        } catch (Exception e) { }
+        return null;
     }
 
     public List<User> getAll() {
@@ -118,15 +83,9 @@ public class UserDAO {
                         user.setId(rs.getInt(1));
                     }
                 }
-                MEMORY_USERS.put(user.getUsername(), user);
                 return true;
             }
-        } catch (Exception e) {
-            // In-memory fallback
-            user.setId(MEMORY_USERS.size() + 1);
-            MEMORY_USERS.put(user.getUsername(), user);
-            return true;
-        }
+        } catch (Exception e) { }
         return false;
     }
 

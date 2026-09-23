@@ -8,8 +8,8 @@ public class UpdateUserRequest {
     @NotBlank(message = "Nama lengkap wajib diisi")
     private String fullName;
 
-    @NotBlank(message = "Role wajib diisi (ADMIN atau CASHIER)")
-    @Pattern(regexp = "ADMIN|CASHIER", message = "Role harus ADMIN atau CASHIER")
+    @NotBlank(message = "Role wajib diisi")
+    @Pattern(regexp = "SUPER_ADMIN|ADMIN|CASHIER|CUSTOMER", message = "Role tidak valid")
     private String role;
 
     private boolean active;

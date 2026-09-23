@@ -1,0 +1,36 @@
+ALTER TABLE users MODIFY COLUMN role ENUM('SUPER_ADMIN','ADMIN','CASHIER','CUSTOMER') NOT NULL DEFAULT 'CUSTOMER';
+
+CREATE TABLE IF NOT EXISTS vouchers (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(64) NOT NULL,
+  title VARCHAR(120) NOT NULL,
+  discount_type ENUM('PERCENT','FIXED') NOT NULL,
+  discount_value DECIMAL(12,2) NOT NULL,
+  min_purchase DECIMAL(12,2) NOT NULL DEFAULT 60000.00,
+  max_purchase DECIMAL(12,2) NOT NULL DEFAULT 100000.00,
+  max_claims INT UNSIGNED NOT NULL DEFAULT 1,
+  claimed_count INT UNSIGNED NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_voucher_code (code),
+  CHECK (min_purchase >= 60000.00 AND max_purchase <= 100000.00 AND max_purchase >= min_purchase),
+  CHECK (discount_value > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS voucher_claims (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  voucher_id BIGINT UNSIGNED NOT NULL,
+  customer_user_id INT NOT NULL,
+  sale_id INT NULL,
+  claimed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  redeemed_at DATETIME NULL,
+  status ENUM('CLAIMED','REDEEMED','EXPIRED','CANCELED') NOT NULL DEFAULT 'CLAIMED',
+  UNIQUE KEY uk_voucher_customer (voucher_id, customer_user_id),
+  KEY idx_claim_customer_status (customer_user_id, status),
+  CONSTRAINT fk_claim_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_claim_user FOREIGN KEY (customer_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_claim_sale FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

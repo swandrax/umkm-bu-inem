@@ -10,7 +10,7 @@ public class RegisterRequest {
     private String username;
 
     @NotBlank(message = "Password wajib diisi")
-    @Size(min = 4, message = "Password minimal 4 karakter")
+    @Size(min = 12, max = 128, message = "Password minimal 12 karakter dan maksimal 128 karakter")
     private String password;
 
     @NotBlank(message = "Nama lengkap wajib diisi")

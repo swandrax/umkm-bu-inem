@@ -8,6 +8,8 @@ CREATE DATABASE IF NOT EXISTS `jajanan_ibu_inem` CHARACTER SET utf8mb4 COLLATE u
 USE `jajanan_ibu_inem`;
 
 -- --------------------------------------------------------
+-- HANYA UNTUK DATABASE DEVELOPMENT BARU. Jangan jalankan pada database produksi.
+-- Produksi menggunakan migrasi berurutan di db/migration/ dan backup tervalidasi.
 -- Drop Tables if exists in correct order
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `delivery_logs`;
@@ -30,7 +32,7 @@ CREATE TABLE `users` (
     `username` VARCHAR(50) NOT NULL UNIQUE,
     `password` VARCHAR(255) NOT NULL,
     `full_name` VARCHAR(100) NOT NULL,
-    `role` ENUM('ADMIN', 'CASHIER') NOT NULL DEFAULT 'CASHIER',
+    `role` ENUM('SUPER_ADMIN', 'ADMIN', 'CASHIER', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
     `active` TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -179,8 +181,8 @@ CREATE TABLE `delivery_logs` (
 
 -- Insert Users
 INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `role`, `active`) VALUES
-(1, 'admin', 'admin123', 'Ibu Inem (Owner)', 'ADMIN', 1),
-(2, 'kasir', 'kasir123', 'Siti Rahma (Kasir)', 'CASHIER', 1);
+(1, 'admin', '$2a$10$3qQb5BpTKc9tV62IqvGFNuIeHChWU5QqJ9GVWRaF0YacClgQlBIcC', 'Ibu Inem (Owner)', 'SUPER_ADMIN', 1),
+(2, 'kasir', '$2a$10$AJ0gij28QlRgZkzoWdILtOKh/yB14BCmljCm2DjLTh9aRqFKB8UJa', 'Siti Rahma (Kasir)', 'CASHIER', 1);
 
 -- Insert Categories
 INSERT INTO `categories` (`id`, `name`, `description`) VALUES

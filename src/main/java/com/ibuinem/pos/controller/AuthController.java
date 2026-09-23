@@ -3,7 +3,6 @@ package com.ibuinem.pos.controller;
 import com.ibuinem.pos.dto.auth.LoginRequest;
 import com.ibuinem.pos.dto.auth.LoginResponse;
 import com.ibuinem.pos.dto.auth.UserDto;
-import com.ibuinem.pos.dto.auth.RegisterRequest;
 import com.ibuinem.pos.dto.common.ApiResponse;
 import com.ibuinem.pos.service.AuthService;
 import jakarta.validation.Valid;
@@ -19,12 +18,6 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<LoginResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        LoginResponse response = authService.register(request);
-        return ResponseEntity.ok(ApiResponse.success("Pendaftaran akun berhasil", response));
     }
 
     @PostMapping("/login")

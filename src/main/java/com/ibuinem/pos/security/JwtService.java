@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    @Value("${app.jwt.secret}")
     private String secretKeyString;
 
     @Value("${app.jwt.expiration-ms:86400000}")
@@ -26,10 +26,7 @@ public class JwtService {
     private SecretKey getSigningKey() {
         byte[] keyBytes = secretKeyString.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            // Pad or replicate if secret is short for HS256
-            byte[] padded = new byte[32];
-            System.arraycopy(keyBytes, 0, padded, 0, Math.min(keyBytes.length, 32));
-            keyBytes = padded;
+            throw new IllegalStateException("JWT_SECRET harus minimal 32 byte dan unik per lingkungan");
         }
         return Keys.hmacShaKeyFor(keyBytes);
     }

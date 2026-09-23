@@ -1,0 +1,76 @@
+version: 2
+
+updates:
+  # Backend — Maven / Java dependencies
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Jakarta
+    labels:
+      - dependencies
+      - java
+    open-pull-requests-limit: 10
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework*"
+      security-libs:
+        patterns:
+          - "io.jsonwebtoken*"
+
+  # Frontend — npm / Node.js dependencies
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Jakarta
+    labels:
+      - dependencies
+      - javascript
+    open-pull-requests-limit: 10
+    groups:
+      next-react:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+
+  # Docker — Backend Dockerfile
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Jakarta
+    labels:
+      - dependencies
+      - docker
+
+  # Docker — Frontend Dockerfile
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Jakarta
+    labels:
+      - dependencies
+      - docker
+
+  # GitHub Actions — workflow action versions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Jakarta
+    labels:
+      - dependencies
+      - ci

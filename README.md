@@ -2,6 +2,44 @@
 
 Sistem Point of Sales (POS) & Manajemen Toko UMKM modern untuk **Jajanan Ibu Inem**. Dibangun dengan arsitektur full-stack modern menggunakan **Java 21 + Spring Boot 3** sebagai satu-satunya backend utama, **Next.js 16 (App Router) + TypeScript** sebagai frontend web modern, dan **tanpa legacy PHP**.
 
+> Status hardening: baseline container, CI, observability, ERD/LRS, dan privasi telah ditambahkan. Mulai dari [operasional dan deployment](#operasional-cicd-dan-skalabilitas), [arsitektur ter-refactor](docs/architecture.md), serta [kontrol UU PDP/UU ITE/ISO 27001](docs/security-and-privacy.md). Jangan memakai seed database atau secret contoh pada produksi.
+
+Integrasi provider yang dipilih adalah **Xendit: QRIS dinamis + Virtual Account + e-wallet**. Detail model data, webhook aman, dan langkah test lokal ada pada [docs/xendit-integration.md](docs/xendit-integration.md).
+
+Role `SUPER_ADMIN`, `ADMIN`, `CASHIER`, dan `CUSTOMER`, desain voucher dua hari Rp60.000–Rp100.000, barcode, Onsen UI, serta baseline HUMAN/PerimeterX dijelaskan di [docs/roles-vouchers-and-perimeterx.md](docs/roles-vouchers-and-perimeterx.md).
+
+## Operasional, CI/CD, dan Skalabilitas
+
+Jalankan secara lokal/VPS dengan Docker:
+
+1. Salin `.env.example` menjadi `.env`, isi secret unik; `JWT_SECRET` minimal 32 byte dan semua password wajib diganti.
+2. Jalankan `docker compose up --build`; aplikasi tersedia pada `http://localhost`.
+3. Tambahkan Grafana dan Prometheus dengan `docker compose --profile observability up --build`; Grafana ada di `http://localhost:3001`.
+4. Pada VPS, ubah `:80` pada `ops/caddy/Caddyfile` menjadi domain publik. Gateway akan mengelola TLS; jangan buka port database, Prometheus, atau Actuator.
+
+`database.sql` hanya untuk database development baru dan bersifat destruktif. Produksi memakai migrasi additive di `db/migration/` sesudah backup dan uji restore.
+
+```mermaid
+flowchart TD
+  A[Pull request] --> B[Java 21 dan Node 22]
+  B --> C[Maven clean verify]
+  B --> D[npm ci lint build audit]
+  C --> E[Docker build]
+  D --> E
+  E --> F[Trivy CVE HIGH CRITICAL]
+  F -->|lulus| G[Review merge]
+  G --> H[Backup dan migrasi staging]
+  H --> I[Health check smoke test]
+  I --> J[Deploy rolling ke VPS]
+  J --> K[Grafana monitor atau rollback]
+```
+
+Workflow [CI](.github/workflows/ci.yml) menjalankan test backend, lockfile frontend, audit npm produksi, build image, dan scan CVE. Audit awal `npm audit --omit=dev` menghasilkan 0 kerentanan produksi; scan Java/image dijalankan ulang pada setiap CI karena CVE berubah dari waktu ke waktu.
+
+## Keamanan dan Kepatuhan
+
+UU PDP dan UU ITE menjadi acuan kewajiban, sedangkan ISO/IEC 27001:2022 menjadi kerangka kontrol. Ini bukan sertifikasi atau opini hukum; lihat [kontrol teknis dan SOP wajib](docs/security-and-privacy.md) sebelum go-live.
+
 ---
 
 ## 📑 Daftar Isi
