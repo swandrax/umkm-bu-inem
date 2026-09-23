@@ -6,7 +6,7 @@ RUN ./mvnw -q -DskipTests dependency:go-offline
 COPY src src
 RUN ./mvnw -q -DskipTests package
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 RUN groupadd --system app && useradd --system --gid app --create-home app
 WORKDIR /app
 COPY --from=build /workspace/target/*.jar app.jar
