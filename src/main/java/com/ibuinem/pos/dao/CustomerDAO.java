@@ -128,7 +128,41 @@ public class CustomerDAO {
         try {
             c.setLoyaltyPoints(rs.getInt("loyalty_points"));
         } catch (SQLException ignored) {}
-        c.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        try {
+            c.setCustomerCode(rs.getString("customer_code"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setStatus(rs.getString("status") != null ? rs.getString("status") : "ACTIVE");
+        } catch (SQLException ignored) {}
+        try {
+            c.setSource(rs.getString("source") != null ? rs.getString("source") : "DIRECT");
+        } catch (SQLException ignored) {}
+        try {
+            c.setEmail(rs.getString("email"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setCompanyName(rs.getString("company_name"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setCity(rs.getString("city"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setProvince(rs.getString("province"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setPostalCode(rs.getString("postal_code"));
+        } catch (SQLException ignored) {}
+        try {
+            c.setNotes(rs.getString("notes"));
+        } catch (SQLException ignored) {}
+        try {
+            Timestamp ua = rs.getTimestamp("updated_at");
+            if (ua != null) c.setUpdatedAt(ua.toLocalDateTime());
+        } catch (SQLException ignored) {}
+        Timestamp ca = rs.getTimestamp("created_at");
+        if (ca != null) {
+            c.setCreatedAt(ca.toLocalDateTime());
+        }
         return c;
     }
 }

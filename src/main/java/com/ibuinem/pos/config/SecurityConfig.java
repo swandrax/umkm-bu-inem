@@ -89,8 +89,18 @@ public class SecurityConfig {
                 })
             )
             .authorizeHttpRequests(auth -> auth
-                // Public auth endpoints
+                // Public endpoints: Auth, Webhooks, Business Settings, Service Catalog, Public Orders, Leads
                 .requestMatchers("/api/v1/auth/login", "/api/v1/webhooks/xendit").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/business-settings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/services/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/leads").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/status").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/simulate-qris").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders/*/pay-cash").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/payment-proof").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/receipt").permitAll()
                 // Admin-only management endpoints
                 .requestMatchers("/api/v1/users/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
