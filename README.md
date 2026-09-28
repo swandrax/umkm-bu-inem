@@ -1,12 +1,14 @@
-# Jajanan Ibu Inem - Modern Full-Stack POS Architecture
+# UMKM Bu Inem - Digital Business, Marketing, CRM & Commerce Platform
 
-Sistem Point of Sales (POS) & Manajemen Toko UMKM modern untuk **Jajanan Ibu Inem**. Dibangun dengan arsitektur full-stack modern menggunakan **Java 21 + Spring Boot 3** sebagai satu-satunya backend utama, **Next.js 16 (App Router) + TypeScript** sebagai frontend web modern, dan **tanpa legacy PHP**.
+Platform Terpadu **Digital Marketing, CRM, Manajemen Layanan, Pemesanan Online, Pembayaran Real-Time, dan Operasional UMKM** untuk **UMKM Bu Inem**. Berevolusi dari sistem kasir internal menjadi ekosistem digital lengkap berbasis **Java 21 + Spring Boot 3** (backend otoritatif) dan **Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS v4** (frontend modern light-theme).
 
-> Status hardening: baseline container, CI, observability, ERD/LRS, dan privasi telah ditambahkan. Mulai dari [operasional dan deployment](#operasional-cicd-dan-skalabilitas), [arsitektur ter-refactor](docs/architecture.md), serta [kontrol UU PDP/UU ITE/ISO 27001](docs/security-and-privacy.md). Jangan memakai seed database atau secret contoh pada produksi.
-
-Integrasi provider yang dipilih adalah **Xendit: QRIS dinamis + Virtual Account + e-wallet**. Detail model data, webhook aman, dan langkah test lokal ada pada [docs/xendit-integration.md](docs/xendit-integration.md).
-
-Role `SUPER_ADMIN`, `ADMIN`, `CASHIER`, dan `CUSTOMER`, desain voucher dua hari Rp60.000–Rp100.000, barcode, Onsen UI, serta baseline HUMAN/PerimeterX dijelaskan di [docs/roles-vouchers-and-perimeterx.md](docs/roles-vouchers-and-perimeterx.md).
+> 📊 **Laporan & Dokumentasi Arsitektur Terpadu**:
+> - [Laporan Optimasi & Benchmark 67%+](docs/optimization-report.md)
+> - [Baseline Pengukuran Awal](docs/optimization-baseline.md)
+> - [Arsitektur CRM & Marketing](docs/crm-architecture.md)
+> - [Alur Pemesanan & Pembayaran QRIS / Cash](docs/order-payment-flow.md)
+> - [Kompatibilitas Sistem Kasir POS Legacy](docs/legacy-compatibility.md)
+> - [Panduan Deployment VPS & Kontrol Privasi](docs/security-and-privacy.md)
 
 ## Operasional, CI/CD, dan Skalabilitas
 
@@ -411,41 +413,44 @@ stateDiagram-v2
 
 ## 🚀 Fitur Utama Aplikasi
 
-1. **Kasir POS Responsif (`/pos`)**:
-   - Filter cepat kategori dan pencarian instan nama produk jajanan.
-   - Keranjang POS dinamis dengan kalkulasi diskon, subtotal, pajak, dan kembalian.
-   - **Floating Checkout Bar** di layar mobile untuk akses pembayaran satu sentuhan.
-   - Pratinjau struk thermal 58mm dengan kode QR verifikasi invoice.
+### A. Ekosistem Digital Marketing & Customer-Facing (Publik)
+1. **Showcase & Portal Pemasaran Terpadu (`/`, `/about`, `/portfolio`, `/faq`)**:
+   - Beranda interaktif dengan visual premium warm light-theme UMKM tanpa dark mode.
+   - Halaman profil UMKM, portofolio studi kasus digitalisasi, dan FAQ interaktif.
+2. **Katalog & Detail Layanan Digital (`/services`, `/services/[slug]`, `/pricing`)**:
+   - Paket layanan modern: Website Company Profile, Toko Online/Katalog, Setup CRM, Integrasi QRIS, Maintenance, dan Custom App.
+   - Matriks perbandingan harga transparan dan estimasi pengerjaan.
+3. **Pemesanan Mandiri & Otoritatif (`/order`, `/order/[id]`)**:
+   - Formulir pemesanan multi-langkah dengan perhitungan subtotal, diskon, dan PPN 11% yang dikontrol 100% oleh server.
+   - Pelacakan status pesanan real-time dengan auto-polling cerdas.
+4. **Gerbang Pembayaran & Simulator QRIS Demo (`/payment/[orderId]`)**:
+   - **QRIS Demo Interaktif**: Menampilkan QR code aman dengan banner tegas `QRIS DEMO / TEST PAYMENT` dan tombol simulasi interaktif (`SUCCESS`, `FAILED`, `EXPIRED`).
+   - **Kalkulator Pembayaran Tunai (Cash)**: Otomatisasi hitung uang diterima dan uang kembalian (*change amount*).
+5. **Struk Digital & Cetak Thermal 58mm (`/receipt/[orderId]`)**:
+   - Pratinjau struk thermal 58mm standar kasir dengan barcode Code 128 format `ORDER:{orderNumber}`.
+   - Identitas toko dinamis dari database, email layanan pelanggan, dan tautan tracking pesanan.
+6. **Formulir Hubungi Kami & Inbound Leads (`/contact`)**:
+   - Formulir prospek instan yang terintegrasi otomatis ke pipeline CRM.
 
-2. **Dashboard Metrik Bisnis Real-Time (`/dashboard`)**:
-   - Menampilkan total omset harian, jumlah transaksi, item terjual, dan direktori pelanggan.
-   - Peringatan stok menipis (*Low Stock Alert*) untuk memprioritaskan restock jajanan.
-   - Grafik ranking produk terlaris (*Top Selling*) dan distribusi saluran pembayaran.
+### B. CRM & Manajemen Bisnis (Admin & Staff)
+7. **Pipeline Penjualan Kanban Prospek (`/leads`)**:
+   - Tampilan visual Kanban 7 tahapan (`NEW` ➔ `CONTACTED` ➔ `QUALIFIED` ➔ `PROPOSAL` ➔ `NEGOTIATION` ➔ `WON` / `LOST`).
+   - Tampilan tabel padat data dengan aksi langsung hubungi via WhatsApp dan konversi prospek ke pelanggan.
+8. **Audit Trail & Linimasa Aktivitas (`/activities`)**:
+   - Catatan kronologis terpadu dari setiap peristiwa pembuatan prospek, pesanan, dan konfirmasi pembayaran.
+9. **Manajemen Pesanan Layanan (`/orders`)**:
+   - Monitoring pemrosesan pesanan, filter status pembayaran, dan aksi pembaruan tahap fulfillment.
+10. **Pengaturan Identitas Bisnis Dinamis (`/settings`)**:
+    - Kelola langsung nama usaha, alamat, nomor telepon/WhatsApp, email CS, tarif pajak, dan footer struk tanpa redeploy.
 
-3. **Master Data Produk (`/products`)**:
-   - Pengelolaan aneka kue basah, jajanan pasar, snack, dan minuman.
-   - Validasi ketat menggunakan Zod & React Hook Form.
-   - Tabel responsif berbasis TanStack Table dengan sorting dan pagination.
-
-4. **Kategori Jajanan (`/categories`)**:
-   - Pengelompokan jenis jajanan UMKM secara terstruktur.
-
-5. **Direktori Pelanggan & Loyalitas (`/customers`)**:
-   - Pencatatan nomor telepon/WhatsApp pelanggan dan akumulasi poin loyalitas.
-
-6. **Riwayat Transaksi & Struk Kasir (`/transactions`)**:
-   - Pencarian transaksi berdasarkan nomor nota atau rentang tanggal.
-   - Fitur cetak ulang struk thermal kapan saja.
-
-7. **Monitoring Pembayaran (`/payments`)**:
-   - Pemantauan mutasi 8 saluran pembayaran: **CASH, QRIS, TRANSFER, DEBIT, GOPAY, OVO, DANA, SHOPEEPAY**.
-
-8. **Manajemen Pengiriman & Kurir (`/shipping`)**:
-   - Pelacakan status pengantaran jajanan (PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED).
-   - Penginputan nomor resi kurir dan catatan penerimaan pesanan.
-
-9. **Laporan & Ekspor Data Analitik BMC (`/reports`)**:
-   - Rekap harian, mingguan, dan bulanan.
+### C. Kompatibilitas Kasir Toko & POS Legacy
+11. **Kasir POS Toko (`/pos`)**:
+    - Keranjang belanja in-store untuk jajanan pasar dan produk ritel dengan barcode scanner.
+    - Banner penanda kompatibilitas legacy untuk navigasi ke platform CRM terpadu.
+12. **Master Data Produk & Kategori (`/products`, `/categories`)**:
+    - Manajemen katalog kue basah, jajanan pasar, snack, dan minuman dengan validasi Zod.
+13. **Direktori Pelanggan & Laporan Keuangan (`/customers`, `/transactions`, `/payments`, `/shipping`, `/reports`)**:
+    - Pengelolaan riwayat transaksi lama, mutasi kasir, status kurir pengiriman, dan ekspor laporan.
    - **Ekspor CSV Khusus BMC Analitik Mingguan** untuk analisis Business Model Canvas.
    - Ekspor laporan spreadsheet Excel (`.xlsx`) dan format cetak PDF.
 
