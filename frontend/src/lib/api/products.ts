@@ -29,7 +29,11 @@ export const productsApi = {
   getAll: async (params?: ProductFilterParams): Promise<Product[]> => {
     try {
       const searchParams = new URLSearchParams();
-      if (params?.query) searchParams.append("query", params.query);
+      if (params?.query) {
+        // [VECTOR-DB-MIGRATION] Pada saat migrasi ke Semantic Search (Pinecone/Milvus),
+        // query pencarian ini dapat dipassing ke pipeline embeddings di Backend.
+        searchParams.append("search", params.query);
+      }
       if (params?.categoryId && params.categoryId > 0) searchParams.append("categoryId", params.categoryId.toString());
       if (params?.onlyActive !== undefined) searchParams.append("onlyActive", params.onlyActive.toString());
       if (params?.sortBy) searchParams.append("sortBy", params.sortBy);

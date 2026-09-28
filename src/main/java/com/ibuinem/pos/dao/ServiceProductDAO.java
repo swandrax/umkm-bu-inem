@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibuinem.pos.config.DatabaseConfig;
 import com.ibuinem.pos.model.ServiceProduct;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

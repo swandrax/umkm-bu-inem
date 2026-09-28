@@ -7,6 +7,7 @@ import PublicNavbar from "@/components/marketing/PublicNavbar";
 import PublicFooter from "@/components/marketing/PublicFooter";
 import { useAuthStore } from "@/stores/auth.store";
 import ThermalReceiptModal from "@/components/pos/ThermalReceiptModal";
+import HumanAgentCircleButton from "@/components/agent/HumanAgentCircleButton";
 
 function subscribe() {
   return () => {};
@@ -90,6 +91,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 w-full">{children}</main>
         <PublicFooter />
         <ThermalReceiptModal />
+        <HumanAgentCircleButton />
       </div>
     );
   }
@@ -116,6 +118,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Global Thermal Receipt Modal */}
       <ThermalReceiptModal />
+
+      {/* Floating Human Agent Circle Button (Bottom Right) */}
+      <HumanAgentCircleButton />
     </div>
   );
 }

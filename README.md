@@ -54,10 +54,11 @@ UU PDP dan UU ITE menjadi acuan kewajiban, sedangkan ISO/IEC 27001:2022 menjadi 
    - [Diagram Arsitektur Sistem (High-Level Architecture)](#1-diagram-arsitektur-sistem-high-level-architecture)
    - [Diagram Alur Transaksi POS (Sequence Diagram)](#2-diagram-alur-transaksi-pos-sequence-diagram)
    - [Diagram Relasi Entitas Database (Entity Relationship Diagram / ERD)](#3-diagram-relasi-entitas-database-erd)
-   - [Diagram State Navigasi Responsif & Mobile Drawer](#4-diagram-state-navigasi-responsif--mobile-drawer)
+   - [Diagram Infrastruktur & PWA (Progressive Web App)](#4-diagram-infrastruktur--pwa-progressive-web-app)
+   - [Diagram Workflow CRUD Real-time & Vektor Database](#5-diagram-workflow-crud-real-time--vektor-database)
 5. [Fitur Utama Aplikasi](#-fitur-utama-aplikasi)
 6. [Struktur Direktori Repository](#-struktur-direktori-repository)
-7. [Panduan Menjalankan Aplikasi](#-panduan-menjalankan-aplikasi)
+7. [Panduan Menjalankan Aplikasi & Akun Dummy](#-panduan-menjalankan-aplikasi--akun-dummy)
 
 ---
 
@@ -381,32 +382,98 @@ erDiagram
 
 ---
 
-### 4. Diagram State Navigasi Responsif & Mobile Drawer
+### 4. Diagram Infrastruktur & PWA (Progressive Web App)
 
 ```mermaid
-stateDiagram-v2
-    [*] --> DesktopView : Viewport >= 1024px
-    [*] --> MobileView : Viewport < 1024px
+graph TD
+    subgraph ClientDevice["Perangkat Klien (Mobile / Desktop)"]
+        Browser["Web Browser / PWA App"]
+        ServiceWorker["Service Worker (Offline Support)"]
+        CacheStorage["Cache Storage (App Shell, Statics)"]
+        IndexedDB["IndexedDB (Lokal Data)"]
+        
+        Browser <--> ServiceWorker
+        ServiceWorker <--> CacheStorage
+        ServiceWorker <--> IndexedDB
+    end
 
-    state DesktopView {
-        FullNavbar: Bar Horizontal Lengkap (Dashboard, POS, Produk, dll.)
-        ActiveBadge: Indikator Rute Aktif
-        QuickCart: Badge Ringkasan Keranjang
-    }
+    subgraph CDN_Cloud["Cloudflare / CDN"]
+        EdgeCache["Edge Caching (Static Assets)"]
+    end
 
-    state MobileView {
-        HamburgerClosed: Tombol Hamburger (aria-expanded = false)
-        HamburgerOpen: Slide-Out Drawer Terbuka (aria-expanded = true)
-        BodyLocked: Body Scroll Locked (overflow = hidden)
+    subgraph VPS["VPS / Cloud Server (Ubuntu)"]
+        Nginx["Reverse Proxy (Nginx / Caddy)"]
+        NextJS["Next.js Server (Node.js)"]
+        SpringBoot["Spring Boot API (Java 21)"]
+        MySQL[("MySQL 8.0")]
+        VectorDB[("Semantic Vector DB (Masa Depan)")]
+    end
 
-        HamburgerClosed --> HamburgerOpen : Klik Tombol Hamburger
-        HamburgerOpen --> BodyLocked : Trigger Body Scroll Lock
-        HamburgerOpen --> HamburgerClosed : Klik Tombol X / Tekan ESC / Klik Backdrop
-        HamburgerOpen --> HamburgerClosed : Klik Navigasi Rute Halaman
-    }
+    Browser -->|HTTPS Requests| EdgeCache
+    EdgeCache -->|Dynamic Route| Nginx
+    Nginx -->|/ (Frontend)| NextJS
+    Nginx -->|/api (Backend)| SpringBoot
+    SpringBoot <--> MySQL
+    SpringBoot -.->|Pencarian Pintar| VectorDB
+```
 
-    DesktopView --> MobileView : Resize Layar < 1024px
-    MobileView --> DesktopView : Resize Layar >= 1024px
+---
+
+### 5. Diagram Workflow CRUD Real-time & Vektor Database
+
+Implementasi CRUD realtime berbasis REST API, dengan pengambilan data (Data Fetching) dipusatkan di sisi Frontend menggunakan pola SWR (Stale-While-Revalidate) dari TanStack Query, sehingga backend tidak membebani memory untuk download file data raksasa. Tabel juga menggunakan fluid pagination dengan *search keyword* yang dirancang *Vector-Ready*.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant FE as Frontend (PWA / React Query)
+    participant API as Spring Boot Controller
+    participant Service as Business Service
+    participant DB as MySQL (RDBMS)
+    participant Vector as Vector Database (Opsional)
+
+    %% CREATE (POST)
+    Note over FE,DB: 1. CREATE (POST)
+    FE->>API: POST /api/v1/products (Data Baru)
+    API->>Service: Validasi Input
+    Service->>DB: INSERT INTO products
+    DB-->>Service: Success
+    Service-.->Vector: Sinkronisasi Embeddings (Jika Aktif)
+    API-->>FE: 201 Created
+    FE->>FE: Invalidate Cache (React Query)
+    
+    %% READ (GET) dengan Pagination & Search
+    Note over FE,DB: 2. READ (GET) - Pagination & Search
+    FE->>API: GET /api/v1/products?page=1&size=10&search=lemper
+    API->>Service: Parse Query & Pagination
+    alt Vector Search Aktif
+        Service->>Vector: Vector Similarity Search ("lemper")
+        Vector-->>Service: List Product IDs
+        Service->>DB: SELECT * WHERE id IN (...)
+    else Standar RDBMS
+        Service->>DB: SELECT * FROM products WHERE name LIKE '%lemper%' LIMIT 10 OFFSET 0
+    end
+    DB-->>Service: Data Set
+    API-->>FE: 200 OK (JSON List)
+    FE->>FE: Update Data Table TanStack
+
+    %% UPDATE (PUT)
+    Note over FE,DB: 3. UPDATE (PUT)
+    FE->>API: PUT /api/v1/products/1 (Update Data)
+    API->>Service: Update Logika Bisnis
+    Service->>DB: UPDATE products SET ...
+    Service-.->Vector: Update Embeddings (Jika Aktif)
+    API-->>FE: 200 OK
+    FE->>FE: Optimistic UI Update / Revalidate
+    
+    %% DELETE (DELETE)
+    Note over FE,DB: 4. DELETE
+    FE->>API: DELETE /api/v1/products/1
+    API->>Service: Soft Delete / Hard Delete
+    Service->>DB: UPDATE products SET is_active = false
+    Service-.->Vector: Remove Vector (Jika Aktif)
+    API-->>FE: 204 No Content
+    FE->>FE: Remove item dari UI (Mutate)
 ```
 
 ---
@@ -504,7 +571,7 @@ umkm-bu-inem/
 
 ---
 
-## ⚙️ Panduan Menjalankan Aplikasi
+## ⚙️ Panduan Menjalankan Aplikasi & Akun Dummy
 
 ### 1. Prasyarat Sistem
 - **Java 21 (JDK 21 LTS)**

@@ -50,7 +50,7 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.getSubject());
     }
 
     public Integer extractUserId(String token) {
@@ -74,7 +74,7 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = extractClaim(token, Claims::getExpiration);
+        Date expiration = extractClaim(token, claims -> claims.getExpiration());
         return expiration != null && expiration.before(new Date());
     }
 

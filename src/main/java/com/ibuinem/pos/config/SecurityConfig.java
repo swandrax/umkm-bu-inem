@@ -65,7 +65,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             // API memakai Bearer token di header, bukan cookie sesi.
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .headers(headers -> headers
                 .contentTypeOptions(Customizer.withDefaults())
@@ -89,8 +89,8 @@ public class SecurityConfig {
                 })
             )
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints: Auth, Webhooks, Business Settings, Service Catalog, Public Orders, Leads
-                .requestMatchers("/api/v1/auth/login", "/api/v1/webhooks/xendit").permitAll()
+                // Public endpoints: Auth, Webhooks, Business Settings, Service Catalog, Public Orders, Leads, Human Agent
+                .requestMatchers("/api/v1/auth/login", "/api/v1/webhooks/xendit", "/api/v1/agent/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/business-settings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/services/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/leads").permitAll()
