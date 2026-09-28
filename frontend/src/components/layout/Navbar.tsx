@@ -33,14 +33,15 @@ interface NavLinkItem {
 }
 
 const NAV_LINKS: NavLinkItem[] = [
-  { label: "Kasir (POS)", href: "/pos", icon: ShoppingCart },
-  { label: "Riwayat", href: "/transactions", icon: History },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Pesanan", href: "/orders", icon: ShoppingCart },
   { label: "Pelanggan", href: "/customers", icon: Users },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, adminOnly: true },
-  { label: "Produk", href: "/products", icon: Package, adminOnly: true },
+  { label: "Prospek CRM", href: "/leads", icon: UserCog },
+  { label: "Aktivitas", href: "/activities", icon: Activity },
+  { label: "Riwayat", href: "/transactions", icon: History },
+  { label: "Katalog", href: "/products", icon: Package, adminOnly: true },
   { label: "Kategori", href: "/categories", icon: FolderTree, adminOnly: true },
   { label: "Laporan", href: "/reports", icon: BarChart3, adminOnly: true },
-  { label: "Users", href: "/users", icon: UserCog, adminOnly: true },
   { label: "Pengaturan", href: "/settings", icon: Settings, adminOnly: true },
 ];
 
@@ -137,7 +138,7 @@ export default function Navbar() {
 
               {/* Brand Logo & Title */}
               <Link
-                href="/pos"
+                href="/dashboard"
                 className="flex items-center gap-2.5 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none rounded-xl"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-600 shadow-md shadow-amber-500/20 text-white font-bold">
@@ -145,10 +146,10 @@ export default function Navbar() {
                 </div>
                 <div className="hidden min-[360px]:block">
                   <span className="block font-black text-sm sm:text-base leading-tight tracking-tight text-stone-900">
-                    Jajanan Bu Inem
+                    UMKM Bu Inem
                   </span>
                   <span className="block text-[10px] sm:text-[11px] text-amber-600 font-semibold tracking-wider uppercase">
-                    Sistem Kasir UMKM
+                    Platform Bisnis & CRM
                   </span>
                 </div>
               </Link>
@@ -267,9 +268,9 @@ export default function Navbar() {
                   <Store className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-stone-900 leading-tight">Jajanan Bu Inem</p>
+                  <p className="font-bold text-sm text-stone-900 leading-tight">UMKM Bu Inem</p>
                   <span className="text-[10px] text-amber-600 font-semibold tracking-wider uppercase">
-                    Sistem Kasir UMKM
+                    Platform Bisnis & CRM
                   </span>
                 </div>
               </div>

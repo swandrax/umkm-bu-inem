@@ -101,6 +101,12 @@ export const apiClient = {
       method: "PUT",
       body: body ? JSON.stringify(body) : undefined,
     }),
+  patch: <T>(url: string, body?: unknown, options?: RequestInit) =>
+    request<T>(url, {
+      ...options,
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   delete: <T>(url: string, options?: RequestInit) =>
     request<T>(url, { ...options, method: "DELETE" }),
   downloadBlob,

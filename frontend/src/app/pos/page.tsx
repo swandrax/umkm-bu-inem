@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   Search,
   ShoppingCart,
@@ -79,6 +80,22 @@ export default function PosPage() {
     <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch lg:items-start min-h-full h-auto lg:h-[calc(100vh-6.5rem)] pb-16 lg:pb-0">
       {/* Left: Product Catalog & Category Filter */}
       <div className="flex-1 flex flex-col h-full min-w-0 space-y-3 sm:space-y-4">
+        {/* Legacy Compatibility Notice Banner */}
+        <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-amber-900 font-medium">
+            <span className="px-2 py-0.5 rounded-md bg-amber-200/70 text-amber-950 font-black text-[10px] uppercase">
+              Legacy Mode
+            </span>
+            <span>Modul Kasir POS dipertahankan untuk kompatibilitas operasional lokal.</span>
+          </div>
+          <Link
+            href="/orders"
+            className="font-bold text-amber-800 hover:text-amber-950 hover:underline shrink-0"
+          >
+            Buka Manajemen Pesanan & CRM →
+          </Link>
+        </div>
+
         {/* Top Controls: Search Bar & Quick Categories */}
         <div className="bg-white p-4 rounded-3xl border border-stone-200/80 shadow-xs space-y-3">
           <div className="relative">
