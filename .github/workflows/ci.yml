@@ -35,21 +35,21 @@ jobs:
       - name: Build container images
         run: docker compose build api web
       - name: Scan source for known CVEs (filesystem)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           severity: HIGH,CRITICAL
           exit-code: "1"
       - name: Scan API Docker image for CVEs
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: "ibuinem/api:local"
           severity: HIGH,CRITICAL
           exit-code: "1"
       - name: Scan Web Docker image for CVEs
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: "ibuinem/web:local"

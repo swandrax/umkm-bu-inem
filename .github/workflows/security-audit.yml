@@ -137,7 +137,7 @@ jobs:
 
       # Scan source/lockfiles
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -152,7 +152,7 @@ jobs:
         continue-on-error: true
 
       - name: Trivy scan API image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: "ibuinem/api:local"
@@ -162,7 +162,7 @@ jobs:
         continue-on-error: true
 
       - name: Trivy scan Web image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: "ibuinem/web:local"
